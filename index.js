@@ -5,4 +5,8 @@ server.on("message", (value) => {
     console.log(value);
 });
 
+server.on("error", (value) => {
+    console.log(value);
+});
+
 server.start();
