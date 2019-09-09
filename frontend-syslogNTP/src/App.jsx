@@ -6,7 +6,6 @@ import Container from '@material-ui/core/Container';
 import DeviceInformation from './DeviceInformation.jsx';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
-import axios from 'axios';
 
 const styles = theme => ({
   container: {
@@ -14,11 +13,11 @@ const styles = theme => ({
     flexWrap: 'wrap',
   },
   textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
+    marginLeft: theme.spacing(),
+    marginRight: theme.spacing(),
   },
   divider: {
-    height: theme.spacing.unit * 2,
+    height: theme.spacing(2),
   },
 });
 
@@ -26,10 +25,11 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-      data: [],
+      allData: [],
       selectedDevice: '',
-      devices: [{label: "Device example #1", value: "1"}, {label: "Device example #2", value: "2"}],
+      devices: [],
       intervalIsSet: false,
+      deviceLogs: [],
     };
   }
 
@@ -51,25 +51,41 @@ class App extends React.Component {
   getDataFromDb = () => {
     fetch('http://localhost:3001/api/getData')
       .then((data) => data.json())
-      .then((res) => this.setState({ data: res.data }));
+      .then((res) => this.setState({ allData: res.data }));
     
-      console.log(this.state.data);
-  };
+      let temporalDevices = [];
+      for(let i = 0; i < this.state.allData.length; i++) {
+        temporalDevices.push(this.state.allData[i].Host);
+      };
+      let uniqueDevices = [...new Set(temporalDevices)];
 
-  /*putDataToDB = (Sequence, Host, Priority, Date, Time, Message) => {
-    axios.post('http://localhost:3001/api/putData', {
-      Sequence: Sequence,
-      Host: Host,
-      Priority: Priority,
-      Date: Date,
-      Time: Time,
-      Message: Message,
-    });
-  };*/
+      for(let i = 0; i < uniqueDevices.length; i++) {
+        uniqueDevices[i] = {label: uniqueDevices[i], value: i};
+      };
+
+      this.setState({
+        devices: uniqueDevices,
+      });
+  };
 
   refreshComboBox = (name) => event => {
     this.setState({
       [name]: event.target.value,
+    });
+
+    let host = this.state.devices[event.target.value].label;
+    let temporalLogs = [];
+    let index = 0;
+    for(let i = 0; i < this.state.allData.length; i++) {
+      if(this.state.allData[i].Host === host) {
+        temporalLogs[index] = [this.state.allData[i].Sequence + "", this.state.allData[i].Host + "", this.state.allData[i].Priority + "",
+                                this.state.allData[i].Date + "", this.state.allData[i].Time + "", this.state.allData[i].Message + ""];
+        index++;
+      }
+    }
+
+    this.setState({
+      deviceLogs: temporalLogs,
     });
   };
 
@@ -77,7 +93,7 @@ class App extends React.Component {
     return (
       <div>
         <Container>
-          <Grid xs={12} sm={12} md={6}>
+          <Grid>
             <TextField
               id="outlined-select-country"
               label="Select a Device:"
@@ -96,7 +112,7 @@ class App extends React.Component {
         </Container>
               
         <Container>
-          <DeviceInformation />
+          <DeviceInformation deviceInformation = {this.state.deviceLogs}/>
         </Container>
       </div>
     );

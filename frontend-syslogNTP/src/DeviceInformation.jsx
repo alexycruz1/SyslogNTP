@@ -74,50 +74,19 @@ const styles = theme => ({
 });
 
 class DeviceInformation extends React.Component {
-    state = {
-        deviceInformation_data: [],
-    };
-
-    componentDidMount() {       
-        let temporaldata = [];
-        temporaldata[0] = ["SEQ_prueba", "HOST_prueba", "INFORMATION", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[1] = ["SEQ_prueba", "HOST_prueba", "DEBUG", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[2] = ["SEQ_prueba", "HOST_prueba", "NOTICE", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[3] = ["SEQ_prueba", "HOST_prueba", "WARNING", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[4] = ["SEQ_prueba", "HOST_prueba", "ERROR", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[5] = ["SEQ_prueba", "HOST_prueba", "CRITICAL", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[6] = ["SEQ_prueba", "HOST_prueba", "ALERT", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[7] = ["SEQ_prueba", "HOST_prueba", "ALERT", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[8] = ["SEQ_prueba", "HOST_prueba", "ALERT", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[9] = ["SEQ_prueba", "HOST_prueba", "ALERT", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[10] = ["SEQ_prueba", "HOST_prueba", "ALERT", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[11] = ["SEQ_prueba", "HOST_prueba", "ALERT", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-        temporaldata[12] = ["SEQ_prueba", "HOST_prueba", "ALERT", "DATE_prueba", "TIME_prueba",
-                                    "MESSAGE_prueba"];
-
-        this.setState({
-            deviceInformation_data: temporaldata
-        })
-    };
+    constructor(props) {
+        super(props);
+        this.state = { 
+          
+        };
+      }
 
 
     render() {
         const { classes } = this.props;
         const columns = [
             {
-             name: "SEQ",
+             name: "SEQUENCE",
              options: {
               filter: true,
               sort: true,
@@ -138,10 +107,10 @@ class DeviceInformation extends React.Component {
                 customBodyRender: (value, tableMeta, updateValue) => {
                   return (
                         <div>
-                            {value === 'INFORMATION' ? (
+                            {value === '6' ? (
                                 <div>
                                     <Button variant="contained" color="secondary" className={classes.InformationButton}>
-                                        {value}
+                                        INFORMATION
                                     </Button>
                                 </div>
                             ): (
@@ -149,10 +118,10 @@ class DeviceInformation extends React.Component {
 
                                 </div>
                             )}
-                            {value === 'DEBUG' ? (
+                            {value === '7' ? (
                                 <div>
                                     <Button variant="contained" color="secondary" className={classes.DebugButton}>
-                                        {value}
+                                        DEBUG
                                     </Button>
                                 </div>
                             ): (
@@ -160,10 +129,10 @@ class DeviceInformation extends React.Component {
 
                                 </div>
                             )}
-                            {value === 'NOTICE' ? (
+                            {value === '5' ? (
                                 <div>
                                     <Button variant="contained" color="secondary" className={classes.NoticeButton}>
-                                        {value}
+                                        NOTICE
                                     </Button>
                                 </div>
                             ): (
@@ -171,10 +140,10 @@ class DeviceInformation extends React.Component {
 
                                 </div>
                             )}
-                            {value === 'WARNING' ? (
+                            {value === '4' ? (
                                 <div>
                                     <Button variant="contained" color="secondary" className={classes.WarningButton}>
-                                        {value}
+                                        WARNING
                                     </Button>
                                 </div>
                             ): (
@@ -182,10 +151,10 @@ class DeviceInformation extends React.Component {
 
                                 </div>
                             )}
-                            {value === 'ERROR' ? (
+                            {value === '3' ? (
                                 <div>
                                     <Button variant="contained" color="secondary" className={classes.ErrorButton}>
-                                        {value}
+                                        ERROR
                                     </Button>
                                 </div>
                             ): (
@@ -193,10 +162,10 @@ class DeviceInformation extends React.Component {
 
                                 </div>
                             )}
-                            {value === 'CRITICAL' ? (
+                            {value === '2' ? (
                                 <div>
                                     <Button variant="contained" color="secondary" className={classes.CriticalButton}>
-                                        {value}
+                                        CRITICAL
                                     </Button>
                                 </div>
                             ): (
@@ -204,10 +173,10 @@ class DeviceInformation extends React.Component {
 
                                 </div>
                             )}
-                            {value === 'ALERT' ? (
+                            {value === '1' ? (
                                 <div>
                                     <Button variant="contained" color="secondary" className={classes.AlertButton}>
-                                        {value}
+                                        ALERT
                                     </Button>
                                 </div>
                             ): (
@@ -249,6 +218,7 @@ class DeviceInformation extends React.Component {
             selectableRows: 'none',
             rowHover: true,
             rowsPerPage: 8,
+            rowsPerPageOptions: [],
             downloadOptions: {filename: 'DeviceInformation.csv', separator: ','},
             onRowsSelect: (rowsSelected, allRowsSelected) => {
               
@@ -267,7 +237,7 @@ class DeviceInformation extends React.Component {
         return (
             <div>
             <MUIDataTable
-                data={this.state.deviceInformation_data}
+                data={this.props.deviceInformation}
                 columns={columns}
                 options={options}
             />
