@@ -6,6 +6,7 @@ import Container from '@material-ui/core/Container';
 import DeviceInformation from './DeviceInformation.jsx';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
+const io = require("socket.io-client");
 
 const styles = theme => ({
   container: {
@@ -24,6 +25,7 @@ const styles = theme => ({
 class App extends React.Component {
   constructor(props) {
     super(props);
+    this.socket = null;
     this.state = { 
       allData: [],
       selectedDevice: '',
@@ -34,11 +36,19 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this.getDataFromDb();
-    if (!this.state.intervalIsSet) {
-      let interval = setInterval(this.getDataFromDb, 1000);
-      this.setState({ intervalIsSet: interval });
-    }
+
+    this.getDevices();
+    const socket = io.connect("http://localhost:3001/");
+    socket.on("get-devices", (data) => {
+      console.log(data);
+      this.setState({
+        devices: data.devices
+      })
+    });
+    // if (!this.state.intervalIsSet) {
+    //   let interval = setInterval(this.getDataFromDb, 1000);
+    //   this.setState({ intervalIsSet: interval });
+    // }
   };
 
   componentWillUnmount() {
@@ -46,6 +56,12 @@ class App extends React.Component {
       clearInterval(this.state.intervalIsSet);
       this.setState({ intervalIsSet: null });
     }
+  };
+
+  getDevices = () => {
+    fetch('http://localhost:3001/api/listDevices')
+      .then((data) => data.json())
+      .then((res) => this.setState({ devices: res.devices }));
   };
 
   getDataFromDb = () => {
@@ -69,23 +85,29 @@ class App extends React.Component {
   };
 
   refreshComboBox = (name) => event => {
-    this.setState({
-      [name]: event.target.value,
-    });
-
-    let host = this.state.devices[event.target.value].label;
-    let temporalLogs = [];
-    let index = 0;
-    for(let i = 0; i < this.state.allData.length; i++) {
-      if(this.state.allData[i].Host === host) {
-        temporalLogs[index] = [this.state.allData[i].Sequence + "", this.state.allData[i].Host + "", this.state.allData[i].Priority + "",
-                                this.state.allData[i].Date + "", this.state.allData[i].Time + "", this.state.allData[i].Message + ""];
-        index++;
-      }
+    console.log(event.target.value)
+    if (this.socket !== null) {
+      this.socket.disconnect();
     }
 
-    this.setState({
-      deviceLogs: temporalLogs,
+    this.socket = io.connect(`http://localhost:3001/${event.target.value}`)
+    this.socket.on("log-data", (data) => {
+      console.log(data)
+      this.setState({
+        selectedDevice: event.target.value,
+        deviceLogs: data.map(_log => {
+          return [_log.Sequence + "", _log.Host + "", _log.Priority + "",
+                  _log.Date + "", _log.Time + "", _log.Message + ""]
+        })
+      })
+    });
+    this.socket.on("new-log", _log => {
+      console.log(_log)
+      this.setState(state => {
+        const logs = state.deviceLogs.push([_log.Sequence + "", _log.Host + "", _log.Priority + "",
+        _log.Date + "", _log.Time + "", _log.Message + ""]);
+        return (logs)
+      })
     });
   };
 
@@ -103,8 +125,8 @@ class App extends React.Component {
               onChange={this.refreshComboBox('selectedDevice')}
             >
               {this.state.devices.map((option, index) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
+                <MenuItem key={option} value={option}>
+                  {option}
                 </MenuItem>
               ))}
             </TextField>

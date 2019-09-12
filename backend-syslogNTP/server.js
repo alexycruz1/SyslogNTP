@@ -10,6 +10,7 @@ const http = require('http');
 const API_PORT = 3001;
 const app = express();
 const router = express.Router();
+let devicesSocket = {};
 
 mongoose.connect(getSecret("dbUri"));
 let db = mongoose.connection;
@@ -42,10 +43,20 @@ router.post("/putData", (req, res) => {
   device.Date = req.body.Date;
   device.Time = req.body.Time;
   device.Message = req.body.Message;
-  device.save(err => {
+  device.save((err, newLog) => {
+    console.log("New Log Event: ", newLog)
     if (err) return res.json({ success: false, error: err });
+    let _namespace = getNamespace(newLog.Host)
+    _namespace.logs.push(newLog);
+    _namespace.namespace.emit("new-log", newLog);
     return res.json({ success: true });
   });
+});
+
+router.get("/listDevices", (req, res) => {
+  res.json({
+    devices: Object.keys(devicesSocket)
+  })
 });
 
 let allowCrossDomain = function(req, res, next) {
@@ -55,11 +66,37 @@ let allowCrossDomain = function(req, res, next) {
 }
 
 const server = http.createServer(app);
-/*const io = socketIo(server);
-io.on("connection", (sockets) => {
-  sockets.emit(getData);
-});*/
+const io = socketIo(server);
+
+io.on("connection", socket => {
+  console.log("New client connected (default)", socket.id)
+})
+Device.find((err, data) => {
+  if (err) return res.json({ success: false, error: err });
+  
+  for (let i = 0; i < data.length; i++) {
+    let _namespace = getNamespace(data[i].Host)
+    _namespace.logs.push(data[i]);
+   }
+});
+
+function getNamespace(name) {
+  if (!devicesSocket.hasOwnProperty(name)) {
+    devicesSocket[name] = {
+      logs: [],
+      namespace: io.of("/" + name)
+    };
+    io.emit("get-devices", {
+      devices: Object.keys(devicesSocket)
+    })
+    devicesSocket[name].namespace.on("connection", socket => {
+      socket.emit("log-data", devicesSocket[name].logs)
+      console.log(`New Client connected to ${name}`)
+    })
+  }
+  return devicesSocket[name];
+}
 
 app.use(allowCrossDomain);
 app.use("/api", router);
-app.listen(API_PORT, () => console.log(`LISTENING ON PORT ${API_PORT}`));
+server.listen(API_PORT, () => console.log(`LISTENING ON PORT ${API_PORT}`));

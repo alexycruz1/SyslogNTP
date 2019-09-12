@@ -2,6 +2,9 @@ const SyslogServer = require("syslog-server");
 const server = new SyslogServer();
 const request = require('request');
 
+server.on("error", (value) => {
+    console.log(value)
+})
 server.on("message", (value) => {
     let fields = value.message.split(': ');
     let logDate = new Date(fields[1]);

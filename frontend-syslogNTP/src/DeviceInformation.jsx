@@ -217,7 +217,7 @@ class DeviceInformation extends React.Component {
             responsive: "scrollFullHeight",
             selectableRows: 'none',
             rowHover: true,
-            rowsPerPage: 8,
+            rowsPerPage: 20,
             rowsPerPageOptions: [],
             downloadOptions: {filename: 'DeviceInformation.csv', separator: ','},
             onRowsSelect: (rowsSelected, allRowsSelected) => {
